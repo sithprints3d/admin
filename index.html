@@ -1479,6 +1479,19 @@ header{background:var(--ng);padding:0 16px;position:sticky;top:0;z-index:100;bor
 </div>
 
 
+<!-- TOPBAR ADMIN (fuera del layout para que el height calc funcione) -->
+<div class="topbar" style="display:none" id="admin-topbar">
+  <div>
+    <div class="topbar-logo">Sith<em>prints</em>3D</div>
+    <div class="topbar-sub">SI3D · Panel Admin</div>
+  </div>
+  <div class="topbar-sep"></div>
+  <span class="topbar-badge" id="admin-user-badge">⚡ Admin</span>
+  <div class="topbar-user">
+    <div class="topbar-avatar">👤</div>
+    <button onclick="cerrarAdmin()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:11px;padding:4px 10px">Salir</button>
+  </div>
+</div>
   <div class="layout" id="admin-layout" style="display:none">
   <!-- SIDEBAR -->
   <div class="sidebar" id="admin-sidebar">
@@ -1499,18 +1512,6 @@ header{background:var(--ng);padding:0 16px;position:sticky;top:0;z-index:100;bor
   </div>
   <div class="main" id="admin-main">
 <div id="apanel" style="display:none"><!-- panel wrapper -->
-    <div class="topbar" style="display:none" id="admin-topbar">
-      <div>
-        <div class="topbar-logo">Sith<em>prints</em>3D</div>
-        <div class="topbar-sub">SI3D · Panel Admin</div>
-      </div>
-      <div class="topbar-sep"></div>
-      <span class="topbar-badge" id="admin-user-badge">⚡ Admin</span>
-      <div class="topbar-user">
-        <div class="topbar-avatar">👤</div>
-        <button onclick="cerrarAdmin()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:11px;padding:4px 10px">Salir</button>
-      </div>
-    </div>
     <div class="apc">
       <!-- KPI CARDS -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
@@ -1543,7 +1544,7 @@ header{background:var(--ng);padding:0 16px;position:sticky;top:0;z-index:100;bor
       <!-- TABLA -->
       <div style="background:var(--go);border:1px solid var(--gb);border-radius:12px;overflow:hidden">
         <div style="padding:12px 16px;border-bottom:1px solid var(--gb);display:flex;align-items:center;justify-content:space-between">
-          <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gs)">Pedidos recientes</div>
+          <div style="display:flex;align-items:center;gap:12px"><div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gs)">Pedidos recientes</div><span style="font-size:11px;color:var(--ghost)" id="admin-fecha-hoy"></span></div>
           <div class="fr" style="margin:0">
             <button class="fb" onclick="setF('todos',this)" data-f="todos">Todos</button>
             <button class="fb on" onclick="setF('En Proceso',this)" data-f="En Proceso">En proceso</button>
@@ -1920,19 +1921,12 @@ function enviarPedido(){
 
 // ── ADMIN ─────────────────────────────────────────────────
 function mostrarAdmin(){
-  var ao=document.getElementById('ao');
-  if(ao)ao.classList.remove('hidden');
-  var apanel=document.getElementById('apanel');
-  if(apanel)apanel.style.display='none';
-  var lay=document.getElementById('admin-layout');
-  if(lay)lay.style.display='none';
-  var tb=document.getElementById('admin-topbar');
-  if(tb)tb.style.display='none';
-  document.getElementById('apass').value='';
-  document.getElementById('apass').classList.remove('err');
-  document.getElementById('aerr').textContent='';
-  document.getElementById('bbli').disabled=false;
-  document.getElementById('bbli').textContent='Ingresar';
+  var ao=document.getElementById('ao');if(ao)ao.classList.remove('hidden');
+  var apanel=document.getElementById('apanel');if(apanel)apanel.style.display='none';
+  var lay=document.getElementById('admin-layout');if(lay)lay.style.display='none';
+  var tb=document.getElementById('admin-topbar');if(tb)tb.style.display='none';
+  document.getElementById('apass').value='';document.getElementById('apass').classList.remove('err');
+  document.getElementById('aerr').textContent='';document.getElementById('bbli').disabled=false;document.getElementById('bbli').textContent='Ingresar';
   setTimeout(function(){document.getElementById('apass').focus();},200);
 }
 
@@ -4080,21 +4074,21 @@ function toast(msg){var t=document.getElementById('tst');t.textContent=msg;t.cla
 
 // ── BRIDGE UI ─────────────────────────────────────────────
 function _mostrarPanel(user){
-  // 1. Ocultar login
+  // 1. Ocultar login overlay
   var ao=document.getElementById('ao');
   if(ao)ao.classList.add('hidden');
 
-  // 2. Mostrar topbar
+  // 2. Mostrar topbar (está fuera del admin-layout)
   var tb=document.getElementById('admin-topbar');
   if(tb)tb.style.display='flex';
 
-  // 3. Mostrar apanel (contenedor interno que estaba display:none)
-  var apanel=document.getElementById('apanel');
-  if(apanel)apanel.style.display='block';
-
-  // 4. Mostrar layout sidebar+main
+  // 3. Mostrar layout sidebar + main
   var lay=document.getElementById('admin-layout');
   if(lay)lay.style.display='flex';
+
+  // 4. Mostrar contenido del panel
+  var apanel=document.getElementById('apanel');
+  if(apanel)apanel.style.display='block';
 
   // 5. Badge usuario
   var badge=document.getElementById('admin-user-badge');
@@ -4106,41 +4100,34 @@ function _mostrarPanel(user){
   var bp=document.querySelector('.fb[data-f="En Proceso"]');
   if(bp)bp.classList.add('on');
 
-  // 7. Fecha en header
+  // 7. Fecha
   var fechaEl=document.getElementById('admin-fecha-hoy');
   if(fechaEl){
     var d=new Date();
-    var dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
     var meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
     fechaEl.textContent='Hoy · '+d.getDate()+' '+meses[d.getMonth()]+' '+d.getFullYear();
   }
 
-  // 8. Renderizar datos
+  // 8. Cargar productos frescos del sheet
+  gsCall('getProductos',{},function(r){
+    if(r&&r.ok){prods=r.lista;try{sessionStorage.setItem('si3d_prods',JSON.stringify(r.lista));}catch(e){}}
+  });
+
+  // 9. Renderizar
   renderStats();renderTabla();renderChart();
 }
 
 function cerrarAdmin(){
-  // Mostrar login
   var ao=document.getElementById('ao');
   if(ao)ao.classList.remove('hidden');
-
-  // Ocultar topbar
   var tb=document.getElementById('admin-topbar');
   if(tb)tb.style.display='none';
-
-  // Ocultar apanel
-  var apanel=document.getElementById('apanel');
-  if(apanel)apanel.style.display='none';
-
-  // Ocultar layout
   var lay=document.getElementById('admin-layout');
   if(lay)lay.style.display='none';
-
-  // Limpiar sesión
+  var apanel=document.getElementById('apanel');
+  if(apanel)apanel.style.display='none';
   aKey='';
   try{localStorage.removeItem('sp3d_admin_session');}catch(e){}
-
-  // Resetear input
   var pass=document.getElementById('apass');
   if(pass){pass.value='';pass.classList.remove('err');}
   var aerr=document.getElementById('aerr');
@@ -4173,6 +4160,8 @@ function renderStats(){
     var parts=p.fecha.split('/');return parseInt(parts[1])===mesActual&&parseInt(parts[2])===anioActual;
   }).reduce(function(a,p){return a+(p.total||0);},0);
   var stf=document.getElementById('stf');if(stf)stf.textContent=facturado>=1000?'$'+Math.round(facturado/1000)+'k':'$'+facturado.toLocaleString('es-AR');
+  var elFm=document.getElementById('stf-mes');
+  if(elFm){var MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];elFm.textContent=MESES[ahora.getMonth()]+' '+anioActual;}
 }
 
 </script>
